@@ -49,8 +49,7 @@ if (process.env.NODE_ENV !== "production") {
   };
 } else {
   var productionTypeChecker = function () {
-    invariant(
-      false,
+    throw new Error(
       "ImmutablePropTypes type checking code is stripped in production."
     );
   };

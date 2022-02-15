@@ -41,7 +41,7 @@ if (process.env.NODE_ENV !== "production") {
     iterable: createImmutableTypeChecker("Iterable", Immutable.Iterable.isIterable) };
 } else {
   var productionTypeChecker = function productionTypeChecker() {
-    invariant(false, "ImmutablePropTypes type checking code is stripped in production.");
+    throw new Error("ImmutablePropTypes type checking code is stripped in production.");
   };
   productionTypeChecker.isRequired = productionTypeChecker;
   var getProductionTypeChecker = function getProductionTypeChecker() {
