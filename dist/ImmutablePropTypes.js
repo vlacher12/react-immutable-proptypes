@@ -4,6 +4,8 @@
  *     ImmutableTypes.listOf is patterned after React.PropTypes.arrayOf, but for Immutable.List
  *     ImmutableTypes.shape  is based on React.PropTypes.shape, but for any Immutable.Iterable
  */
+"use strict";
+
 var Immutable = require("immutable");
 var invariant = require("invariant");
 
@@ -28,34 +30,21 @@ if (process.env.NODE_ENV !== "production") {
     // Primitive Types
     list: createImmutableTypeChecker("List", Immutable.List.isList),
     map: createImmutableTypeChecker("Map", Immutable.Map.isMap),
-    orderedMap: createImmutableTypeChecker(
-      "OrderedMap",
-      Immutable.OrderedMap.isOrderedMap
-    ),
+    orderedMap: createImmutableTypeChecker("OrderedMap", Immutable.OrderedMap.isOrderedMap),
     set: createImmutableTypeChecker("Set", Immutable.Set.isSet),
-    orderedSet: createImmutableTypeChecker(
-      "OrderedSet",
-      Immutable.OrderedSet.isOrderedSet
-    ),
+    orderedSet: createImmutableTypeChecker("OrderedSet", Immutable.OrderedSet.isOrderedSet),
     stack: createImmutableTypeChecker("Stack", Immutable.Stack.isStack),
     seq: createImmutableTypeChecker("Seq", Immutable.Seq.isSeq),
     record: createImmutableTypeChecker("Record", function (isRecord) {
       return isRecord instanceof Immutable.Record;
     }),
-    iterable: createImmutableTypeChecker(
-      "Iterable",
-      Immutable.Iterable.isIterable
-    ),
-  };
+    iterable: createImmutableTypeChecker("Iterable", Immutable.Iterable.isIterable) };
 } else {
-  var productionTypeChecker = function () {
-    invariant(
-      false,
-      "ImmutablePropTypes type checking code is stripped in production."
-    );
+  var productionTypeChecker = function productionTypeChecker() {
+    invariant(false, "ImmutablePropTypes type checking code is stripped in production.");
   };
   productionTypeChecker.isRequired = productionTypeChecker;
-  var getProductionTypeChecker = function () {
+  var getProductionTypeChecker = function getProductionTypeChecker() {
     return productionTypeChecker;
   };
 
@@ -81,18 +70,11 @@ if (process.env.NODE_ENV !== "production") {
     stack: productionTypeChecker,
     seq: productionTypeChecker,
     record: productionTypeChecker,
-    iterable: productionTypeChecker,
-  };
+    iterable: productionTypeChecker };
 }
 
-ImmutablePropTypes.iterable.indexed = createIterableSubclassTypeChecker(
-  "Indexed",
-  Immutable.Iterable.isIndexed
-);
-ImmutablePropTypes.iterable.keyed = createIterableSubclassTypeChecker(
-  "Keyed",
-  Immutable.Iterable.isKeyed
-);
+ImmutablePropTypes.iterable.indexed = createIterableSubclassTypeChecker("Indexed", Immutable.Iterable.isIndexed);
+ImmutablePropTypes.iterable.keyed = createIterableSubclassTypeChecker("Keyed", Immutable.Iterable.isKeyed);
 
 function getPropType(propValue) {
   var propType = typeof propValue;
@@ -112,34 +94,20 @@ function getPropType(propValue) {
 }
 
 function createChainableTypeChecker(validate) {
-  function checkType(
-    isRequired,
-    props,
-    propName,
-    componentName,
-    location,
-    propFullName,
-    ...rest
-  ) {
+  function checkType(isRequired, props, propName, componentName, location, propFullName) {
+    for (var _len = arguments.length, rest = Array(_len > 6 ? _len - 6 : 0), _key = 6; _key < _len; _key++) {
+      rest[_key - 6] = arguments[_key];
+    }
+
     propFullName = propFullName || propName;
     componentName = componentName || ANONYMOUS;
     if (props[propName] == null) {
       var locationName = location;
       if (isRequired) {
-        return new Error(
-          `Required ${locationName} \`${propFullName}\` was not specified in ` +
-            `\`${componentName}\`.`
-        );
+        return new Error("Required " + locationName + " `" + propFullName + "` was not specified in " + ("`" + componentName + "`."));
       }
     } else {
-      return validate(
-        props,
-        propName,
-        componentName,
-        location,
-        propFullName,
-        ...rest
-      );
+      return validate.apply(undefined, [props, propName, componentName, location, propFullName].concat(rest));
     }
   }
 
@@ -149,18 +117,12 @@ function createChainableTypeChecker(validate) {
   return chainedCheckType;
 }
 
-function createImmutableTypeChecker(
-  immutableClassName,
-  immutableClassTypeValidator
-) {
+function createImmutableTypeChecker(immutableClassName, immutableClassTypeValidator) {
   function validate(props, propName, componentName, location, propFullName) {
     var propValue = props[propName];
     if (!immutableClassTypeValidator(propValue)) {
       var propType = getPropType(propValue);
-      return new Error(
-        `Invalid ${location} \`${propFullName}\` of type \`${propType}\` ` +
-          `supplied to \`${componentName}\`, expected \`${immutableClassName}\`.`
-      );
+      return new Error("Invalid " + location + " `" + propFullName + "` of type `" + propType + "` " + ("supplied to `" + componentName + "`, expected `" + immutableClassName + "`."));
     }
     return null;
   }
@@ -168,53 +130,31 @@ function createImmutableTypeChecker(
 }
 
 function createIterableSubclassTypeChecker(subclassName, validator) {
-  return createImmutableTypeChecker(
-    `Iterable.${subclassName}`,
-    (propValue) =>
-      Immutable.Iterable.isIterable(propValue) && validator(propValue)
-  );
+  return createImmutableTypeChecker("Iterable." + subclassName, function (propValue) {
+    return Immutable.Iterable.isIterable(propValue) && validator(propValue);
+  });
 }
 
-function createIterableTypeChecker(
-  typeChecker,
-  immutableClassName,
-  immutableClassTypeValidator
-) {
-  function validate(
-    props,
-    propName,
-    componentName,
-    location,
-    propFullName,
-    ...rest
-  ) {
+function createIterableTypeChecker(typeChecker, immutableClassName, immutableClassTypeValidator) {
+  function validate(props, propName, componentName, location, propFullName) {
+    for (var _len = arguments.length, rest = Array(_len > 5 ? _len - 5 : 0), _key = 5; _key < _len; _key++) {
+      rest[_key - 5] = arguments[_key];
+    }
+
     var propValue = props[propName];
     if (!immutableClassTypeValidator(propValue)) {
       var locationName = location;
       var propType = getPropType(propValue);
-      return new Error(
-        `Invalid ${locationName} \`${propFullName}\` of type ` +
-          `\`${propType}\` supplied to \`${componentName}\`, expected an Immutable.js ${immutableClassName}.`
-      );
+      return new Error("Invalid " + locationName + " `" + propFullName + "` of type " + ("`" + propType + "` supplied to `" + componentName + "`, expected an Immutable.js " + immutableClassName + "."));
     }
 
     if (typeof typeChecker !== "function") {
-      return new Error(
-        `Invalid typeChecker supplied to \`${componentName}\` ` +
-          `for propType \`${propFullName}\`, expected a function.`
-      );
+      return new Error("Invalid typeChecker supplied to `" + componentName + "` " + ("for propType `" + propFullName + "`, expected a function."));
     }
 
     var propValues = propValue.valueSeq().toArray();
     for (var i = 0, len = propValues.length; i < len; i++) {
-      var error = typeChecker(
-        propValues,
-        i,
-        componentName,
-        location,
-        `${propFullName}[${i}]`,
-        ...rest
-      );
+      var error = typeChecker.apply(undefined, [propValues, i, componentName, location, "" + propFullName + "[" + i + "]"].concat(rest));
       if (error instanceof Error) {
         return error;
       }
@@ -224,32 +164,19 @@ function createIterableTypeChecker(
 }
 
 function createKeysTypeChecker(typeChecker) {
-  function validate(
-    props,
-    propName,
-    componentName,
-    location,
-    propFullName,
-    ...rest
-  ) {
+  function validate(props, propName, componentName, location, propFullName) {
+    for (var _len = arguments.length, rest = Array(_len > 5 ? _len - 5 : 0), _key = 5; _key < _len; _key++) {
+      rest[_key - 5] = arguments[_key];
+    }
+
     var propValue = props[propName];
     if (typeof typeChecker !== "function") {
-      return new Error(
-        `Invalid keysTypeChecker (optional second argument) supplied to \`${componentName}\` ` +
-          `for propType \`${propFullName}\`, expected a function.`
-      );
+      return new Error("Invalid keysTypeChecker (optional second argument) supplied to `" + componentName + "` " + ("for propType `" + propFullName + "`, expected a function."));
     }
 
     var keys = propValue.keySeq().toArray();
     for (var i = 0, len = keys.length; i < len; i++) {
-      var error = typeChecker(
-        keys,
-        i,
-        componentName,
-        location,
-        `${propFullName} -> key(${keys[i]})`,
-        ...rest
-      );
+      var error = typeChecker.apply(undefined, [keys, i, componentName, location, "" + propFullName + " -> key(" + keys[i] + ")"].concat(rest));
       if (error instanceof Error) {
         return error;
       }
@@ -262,42 +189,24 @@ function createListOfTypeChecker(typeChecker) {
   return createIterableTypeChecker(typeChecker, "List", Immutable.List.isList);
 }
 
-function createMapOfTypeCheckerFactory(
-  valuesTypeChecker,
-  keysTypeChecker,
-  immutableClassName,
-  immutableClassTypeValidator
-) {
-  function validate(...args) {
-    return (
-      createIterableTypeChecker(
-        valuesTypeChecker,
-        immutableClassName,
-        immutableClassTypeValidator
-      )(...args) ||
-      (keysTypeChecker && createKeysTypeChecker(keysTypeChecker)(...args))
-    );
+function createMapOfTypeCheckerFactory(valuesTypeChecker, keysTypeChecker, immutableClassName, immutableClassTypeValidator) {
+  function validate() {
+    for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+      args[_key] = arguments[_key];
+    }
+
+    return createIterableTypeChecker(valuesTypeChecker, immutableClassName, immutableClassTypeValidator).apply(undefined, args) || keysTypeChecker && createKeysTypeChecker(keysTypeChecker).apply(undefined, args);
   }
 
   return createChainableTypeChecker(validate);
 }
 
 function createMapOfTypeChecker(valuesTypeChecker, keysTypeChecker) {
-  return createMapOfTypeCheckerFactory(
-    valuesTypeChecker,
-    keysTypeChecker,
-    "Map",
-    Immutable.Map.isMap
-  );
+  return createMapOfTypeCheckerFactory(valuesTypeChecker, keysTypeChecker, "Map", Immutable.Map.isMap);
 }
 
 function createOrderedMapOfTypeChecker(valuesTypeChecker, keysTypeChecker) {
-  return createMapOfTypeCheckerFactory(
-    valuesTypeChecker,
-    keysTypeChecker,
-    "OrderedMap",
-    Immutable.OrderedMap.isOrderedMap
-  );
+  return createMapOfTypeCheckerFactory(valuesTypeChecker, keysTypeChecker, "OrderedMap", Immutable.OrderedMap.isOrderedMap);
 }
 
 function createSetOfTypeChecker(typeChecker) {
@@ -305,46 +214,28 @@ function createSetOfTypeChecker(typeChecker) {
 }
 
 function createOrderedSetOfTypeChecker(typeChecker) {
-  return createIterableTypeChecker(
-    typeChecker,
-    "OrderedSet",
-    Immutable.OrderedSet.isOrderedSet
-  );
+  return createIterableTypeChecker(typeChecker, "OrderedSet", Immutable.OrderedSet.isOrderedSet);
 }
 
 function createStackOfTypeChecker(typeChecker) {
-  return createIterableTypeChecker(
-    typeChecker,
-    "Stack",
-    Immutable.Stack.isStack
-  );
+  return createIterableTypeChecker(typeChecker, "Stack", Immutable.Stack.isStack);
 }
 
 function createIterableOfTypeChecker(typeChecker) {
-  return createIterableTypeChecker(
-    typeChecker,
-    "Iterable",
-    Immutable.Iterable.isIterable
-  );
+  return createIterableTypeChecker(typeChecker, "Iterable", Immutable.Iterable.isIterable);
 }
 
 function createRecordOfTypeChecker(recordKeys) {
-  function validate(
-    props,
-    propName,
-    componentName,
-    location,
-    propFullName,
-    ...rest
-  ) {
+  function validate(props, propName, componentName, location, propFullName) {
+    for (var _len = arguments.length, rest = Array(_len > 5 ? _len - 5 : 0), _key = 5; _key < _len; _key++) {
+      rest[_key - 5] = arguments[_key];
+    }
+
     var propValue = props[propName];
     if (!(propValue instanceof Immutable.Record)) {
       var propType = getPropType(propValue);
       var locationName = location;
-      return new Error(
-        `Invalid ${locationName} \`${propFullName}\` of type \`${propType}\` ` +
-          `supplied to \`${componentName}\`, expected an Immutable.js Record.`
-      );
+      return new Error("Invalid " + locationName + " `" + propFullName + "` of type `" + propType + "` " + ("supplied to `" + componentName + "`, expected an Immutable.js Record."));
     }
     for (var key in recordKeys) {
       var checker = recordKeys[key];
@@ -352,14 +243,7 @@ function createRecordOfTypeChecker(recordKeys) {
         continue;
       }
       var mutablePropValue = propValue.toObject();
-      var error = checker(
-        mutablePropValue,
-        key,
-        componentName,
-        location,
-        `${propFullName}.${key}`,
-        ...rest
-      );
+      var error = checker.apply(undefined, [mutablePropValue, key, componentName, location, "" + propFullName + "." + key].concat(rest));
       if (error) {
         return error;
       }
@@ -369,27 +253,20 @@ function createRecordOfTypeChecker(recordKeys) {
 }
 
 // there is some irony in the fact that shapeTypes is a standard hash and not an immutable collection
-function createShapeTypeChecker(
-  shapeTypes,
-  immutableClassName = "Iterable",
-  immutableClassTypeValidator = Immutable.Iterable.isIterable
-) {
-  function validate(
-    props,
-    propName,
-    componentName,
-    location,
-    propFullName,
-    ...rest
-  ) {
+function createShapeTypeChecker(shapeTypes) {
+  var immutableClassName = arguments[1] === undefined ? "Iterable" : arguments[1];
+  var immutableClassTypeValidator = arguments[2] === undefined ? Immutable.Iterable.isIterable : arguments[2];
+
+  function validate(props, propName, componentName, location, propFullName) {
+    for (var _len = arguments.length, rest = Array(_len > 5 ? _len - 5 : 0), _key = 5; _key < _len; _key++) {
+      rest[_key - 5] = arguments[_key];
+    }
+
     var propValue = props[propName];
     if (!immutableClassTypeValidator(propValue)) {
       var propType = getPropType(propValue);
       var locationName = location;
-      return new Error(
-        `Invalid ${locationName} \`${propFullName}\` of type \`${propType}\` ` +
-          `supplied to \`${componentName}\`, expected an Immutable.js ${immutableClassName}.`
-      );
+      return new Error("Invalid " + locationName + " `" + propFullName + "` of type `" + propType + "` " + ("supplied to `" + componentName + "`, expected an Immutable.js " + immutableClassName + "."));
     }
     var mutablePropValue = propValue.toObject();
     for (var key in shapeTypes) {
@@ -397,14 +274,7 @@ function createShapeTypeChecker(
       if (!checker) {
         continue;
       }
-      var error = checker(
-        mutablePropValue,
-        key,
-        componentName,
-        location,
-        `${propFullName}.${key}`,
-        ...rest
-      );
+      var error = checker.apply(undefined, [mutablePropValue, key, componentName, location, "" + propFullName + "." + key].concat(rest));
       if (error) {
         return error;
       }
@@ -422,11 +292,7 @@ function createMapContainsChecker(shapeTypes) {
 }
 
 function createOrderedMapContainsChecker(shapeTypes) {
-  return createShapeTypeChecker(
-    shapeTypes,
-    "OrderedMap",
-    Immutable.OrderedMap.isOrderedMap
-  );
+  return createShapeTypeChecker(shapeTypes, "OrderedMap", Immutable.OrderedMap.isOrderedMap);
 }
 
 module.exports = ImmutablePropTypes;
